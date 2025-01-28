@@ -16,23 +16,25 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'  # Mise à jour vers la version 18
 
       - name: Install dependencies
-        run: npm install @pinata/sdk
+        run: |
+          npm install
+          npm install @pinata/sdk  # Installation explicite de @pinata/sdk
 
       - name: Upload to Pinata
         env:
           PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
           PINATA_API_SECRET: ${{ secrets.PINATA_API_SECRET }}
         run: |
-          node <<EOF
+          node -e "
           const pinataSDK = require('@pinata/sdk');
           const fs = require('fs');
           const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_API_SECRET);
 
-          const readableStreamForFile = fs.createReadStream('index.html');
+          const readableStreamForFile = fs.createReadStream('index.html'); 
           pinata.pinFileToIPFS(readableStreamForFile)
               .then((result) => console.log('Uploaded:', result))
-              .catch((err) => console.error(err));
-          EOF
+              .catch((err) => console.error('Error uploading to Pinata:', err));
+          "
